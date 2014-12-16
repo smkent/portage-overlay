@@ -1,0 +1,106 @@
+--- ddclient		2009-01-27 14:14:02.000000000 -0500
++++ ddclient		2011-01-09 23:01:39.760072001 -0500
+@@ -524,6 +524,16 @@
+                           $variables{'service-common-defaults'},
+                         ),
+     },
++    'linode' => {
++        'updateable' => undef,
++        'update'     => \&nic_linode_update,
++        'examples'   => \&nic_linode_examples,
++        'variables'  => merge(
++                          { 'server'       => setv(T_FQDNP,  1, 0, 1, 'api.linode.com',   undef)    },
++                          { 'min-interval' => setv(T_DELAY,  0, 0, 1, 0, interval('5m')),},
++                          $variables{'service-common-defaults'},
++                        ),
++    },
+ );
+ $variables{'merged'} = merge($variables{'global-defaults'},
+ 			     $variables{'service-common-defaults'},
+@@ -3368,6 +3378,86 @@
+             $config{$h}{'ip'}     = $ip;
+             $config{$h}{'mtime'}  = $now;
+             $config{$h}{'status'} = 'good';
++            success("updating %s: good: IP address set to %s", $h, $ip);
++        } else {
++            $config{$h}{'status'} = 'failed';
++            warning("SENT:    %s", $url) unless opt('verbose');
++            warning("REPLIED: %s", $reply);
++            failed("updating %s: Invalid reply.", $h);
++        }
++    }
++}
++
++######################################################################
++
++######################################################################
++## nic_linode_examples
++######################################################################
++sub nic_linode_examples {
++    return <<EoEXAMPLE;
++
++o 'linode'
++
++The 'linode' protocol is used by DNS services offered by www.linode.com.
++
++Configuration variables applicable to the 'linode' protocol are:
++  protocol=linode              ##
++  server=fqdn.of.service       ## defaults to linode.com
++  login=domain-id              ## domain id from the service
++  password=linode-api-key      ## api key from service account
++  resourceid                   ## id of the A record for the domain from the service
++
++Example ${program}.conf file entries:
++  ## single host update
++  protocol=linode,                                         \\
++  login=my-linode.com-domain-id,                           \\
++  password=my-linode.com-api-key                           \\
++  my-linode.com-resource-id
++
++EoEXAMPLE
++}
++######################################################################
++## nic_linode_update
++##
++## written by Mike W. Smith
++##
++## based on http://www.linode.com/api/?method=domain.resource.update
++## needs this url to update:
++## #https://api.linode.com?api_key=my_api_key&api_action=domain.resource.update&DomainID=my_domain_id&ResourceID=my_resource_id&Target=my_ip
++##
++######################################################################
++sub nic_linode_update {
++
++
++    debug("\nnic_linode_update -------------------");
++
++    ## update each configured host
++    foreach my $h (@_) {
++        my $ip = delete $config{$h}{'wantip'};
++        info("setting IP address to %s for %s", $ip, $h);
++        verbose("UPDATE:","updating %s", $h);
++
++        my $url;
++        $url   = "http://$config{$h}{'server'}/";
++        $url  .= "?api_key=$config{$h}{'password'}";
++        $url  .= "&api_action=domain.resource.update";
++        $url  .= "&DomainID=$config{$h}{'login'}";
++        $url  .= "&ResourceID=$h";
++        $url  .= "&Target=";
++        $url  .= $ip if $ip;
++
++        my $reply = geturl(opt('proxy'), $url);
++        if (!defined($reply) || !$reply) {
++            failed("updating %s: Could not connect to %s.", $h, $config{$h}{'server'});
++            last;
++        }
++        last if !header_ok($h, $reply);
++
++        my @reply = split /\n/, $reply;
++        if (grep /\[\]/i, @reply) {
++            $config{$h}{'ip'}     = $ip;
++            $config{$h}{'mtime'}  = $now;
++            $config{$h}{'status'} = 'good';
+             success("updating %s: good: IP address set to %s", $h, $ip);
+         } else {
+             $config{$h}{'status'} = 'failed';
