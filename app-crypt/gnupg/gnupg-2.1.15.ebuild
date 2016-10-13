@@ -13,15 +13,15 @@ SRC_URI="mirror://gnupg/gnupg/${MY_P}.tar.bz2"
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86"
+KEYWORDS="alpha amd64 ~arm ~arm64 ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86"
 IUSE="bzip2 doc +gnutls ldap nls readline selinux smartcard tofu tools usb"
 
 COMMON_DEPEND_LIBS="
-	dev-libs/npth
-	>=dev-libs/libassuan-2.4.1
-	>=dev-libs/libgcrypt-1.7.1
-	>=dev-libs/libgpg-error-1.21
-	>=dev-libs/libksba-1.2.0
+	>=dev-libs/npth-1.2
+	>=dev-libs/libassuan-2.4.3
+	>=dev-libs/libgcrypt-1.7.3
+	>=dev-libs/libgpg-error-1.24
+	>=dev-libs/libksba-1.3.4
 	>=net-misc/curl-7.10
 	gnutls? ( >=net-libs/gnutls-3.0:0= )
 	sys-libs/zlib
@@ -48,7 +48,6 @@ RDEPEND="${COMMON_DEPEND_LIBS}
 S="${WORKDIR}/${MY_P}"
 
 src_prepare() {
-	epatch "${FILESDIR}/${PN}-2.1-fix-gentoo-dash-issue.patch"
 	epatch "${FILESDIR}/${PN}-${PV}-disable-obsolete-keyserver-option-warnings.patch"
 	epatch_user
 }
@@ -88,6 +87,7 @@ src_configure() {
 		$(use_enable nls) \
 		$(use_with readline) \
 		$(use_enable tofu) \
+		$(use_enable tools wks-tools) \
 		CC_FOR_BUILD="$(tc-getBUILD_CC)"
 }
 
