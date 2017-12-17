@@ -1,0 +1,23 @@
+diff -Naur gitea-1.3.0/modules/auth/ldap/ldap.go gitea-1.3.0-patched/modules/auth/ldap/ldap.go
+--- src/code.gitea.io/gitea/modules/auth/ldap/ldap.go	2017-11-29 06:51:47.000000000 -0800
++++ src/code.gitea.io/gitea/modules/auth/ldap/ldap.go	2017-12-11 15:25:02.722116453 -0800
+@@ -125,8 +125,17 @@
+ 	log.Trace("Dialing LDAP with security protocol (%v) without verifying: %v", ls.SecurityProtocol, ls.SkipVerify)
+ 
+ 	tlsCfg := &tls.Config{
+-		ServerName:         ls.Host,
+-		InsecureSkipVerify: ls.SkipVerify,
++		ServerName:               ls.Host,
++		InsecureSkipVerify:       ls.SkipVerify,
++		MinVersion:               tls.VersionTLS12,
++		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
++		PreferServerCipherSuites: true,
++		CipherSuites: []uint16{
++			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
++			tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
++			tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
++			tls.TLS_RSA_WITH_AES_256_CBC_SHA,
++		},
+ 	}
+ 	if ls.SecurityProtocol == SecurityProtocolLDAPS {
+ 		return ldap.DialTLS("tcp", fmt.Sprintf("%s:%d", ls.Host, ls.Port), tlsCfg)

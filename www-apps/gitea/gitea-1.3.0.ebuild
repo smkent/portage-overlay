@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
-inherit user golang-build golang-vcs-snapshot
+inherit eutils user golang-build golang-vcs-snapshot
 
 EGO_PN="code.gitea.io/gitea"
 GIT_COMMIT="974cffe"
@@ -40,6 +40,8 @@ src_prepare() {
 		-e "s#^ROOT_PATH =#ROOT_PATH = ${EPREFIX}/var/log/gitea#"\
 		-e "s#^ISSUE_INDEXER_PATH =#ISSUE_INDEXER_PATH = ${GITEA_PREFIX}/indexers/issues.bleve#"\
 		src/${EGO_PN}/conf/app.ini || die
+
+	epatch "${FILESDIR}/gitea-1.3.0-tls-fix.patch"
 }
 
 src_compile() {
