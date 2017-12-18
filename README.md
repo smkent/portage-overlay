@@ -1,8 +1,7 @@
 ## Portage overlay
 
-This repository contains my personal
-[Portage overlay](https://wiki.gentoo.org/wiki/Overlay) for
-[Gentoo Linux](https://www.gentoo.org).
+This repository contains my personal [Portage overlay][portage-overlay] for
+[Gentoo Linux][gentoo].
 
 ## License
 
@@ -20,3 +19,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 See [`LICENSE`](/LICENSE) for the full license text.
+
+[portage-overlay]: https://wiki.gentoo.org/wiki/Overlay
+[gentoo]: https://www.gentoo.org
