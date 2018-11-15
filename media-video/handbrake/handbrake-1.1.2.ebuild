@@ -13,7 +13,7 @@ if [[ ${PV} = *9999* ]]; then
 	KEYWORDS=""
 else
 	EGIT_REPO_URI="https://github.com/HandBrake/HandBrake.git"
-	EGIT_COMMIT="1.1.0"
+	EGIT_COMMIT="${PV}"
 	inherit git-r3
 	KEYWORDS="~amd64 ~x86"
 fi
