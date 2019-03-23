@@ -84,7 +84,7 @@ src_configure() {
 		--verbose \
 		--prefix="${EPREFIX}/usr" \
 		--disable-gtk-update-checks \
-		$(use_enable libav-aac) \
+		$(use_enable libav-aac ffmpeg-aac) \
 		$(use_enable fdk fdk-aac) \
 		$(use_enable gtk) \
 		$(usex !gstreamer --disable-gst) \
