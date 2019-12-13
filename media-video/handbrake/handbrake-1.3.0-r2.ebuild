@@ -3,7 +3,7 @@
 
 EAPI=6
 
-PYTHON_COMPAT=( python2_7 )
+PYTHON_COMPAT=( python3_{1,2,3,4,5,6,7} python2_7 )
 
 inherit autotools eutils gnome2-utils python-any-r1
 
@@ -42,6 +42,7 @@ RDEPEND="
 	media-libs/x264:=
 	media-sound/lame
 	sys-libs/zlib
+	sys-process/numactl
 	libav? ( >=media-video/libav-10.1:0=[fdk?] )
 	!libav? ( >=media-video/ffmpeg-2.3:0=[fdk?] )
 	gstreamer? (
@@ -73,6 +74,10 @@ DEPEND="${RDEPEND}
 	dev-lang/yasm
 	dev-util/intltool
 	sys-devel/automake"
+
+PATCHES=(
+	"${FILESDIR}/handbrake-configure-autoconf-version.patch"
+)
 
 pkg_setup() {
 	python-any-r1_pkg_setup

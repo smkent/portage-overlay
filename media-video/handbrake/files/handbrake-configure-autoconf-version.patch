@@ -1,0 +1,11 @@
+--- handbrake-1.3.0/make/configure.py      2019-12-12 11:06:38.724045259 -0800
++++ handbrake-1.3.0/make/configure.py      2019-12-12 11:08:08.504500938 -0800
+@@ -1602,7 +1602,7 @@
+         else:
+             gmake  = ToolProbe( 'GMAKE.exe',      'make',       'gmake', 'make', abort=True )
+ 
+-        autoconf   = ToolProbe( 'AUTOCONF.exe',   'autoconf',   'autoconf', abort=True, minversion=[2,69,0] )
++        autoconf   = ToolProbe( 'AUTOCONF.exe',   'autoconf',   'autoconf', abort=True )
+         automake   = ToolProbe( 'AUTOMAKE.exe',   'automake',   'automake', abort=True, minversion=[1,15,0] )
+         libtool    = ToolProbe( 'LIBTOOL.exe',    'libtool',    'libtool', abort=True )
+         lipo       = ToolProbe( 'LIPO.exe',       'lipo',       'lipo', abort=False )
