@@ -1,20 +1,20 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
-PYTHON_COMPAT=( python3_{1,2,3,4,5,6,7} python2_7 )
+PYTHON_COMPAT=( python3_{6,7,8} )
 
-inherit autotools eutils gnome2-utils python-any-r1
+inherit autotools eutils gnome2-utils python-any-r1 xdg-utils
 
 if [[ ${PV} = *9999* ]]; then
 	EGIT_REPO_URI="https://github.com/HandBrake/HandBrake.git"
 	inherit git-r3
 	KEYWORDS=""
 else
-	EGIT_REPO_URI="https://github.com/HandBrake/HandBrake.git"
-	EGIT_COMMIT="${PV}"
-	inherit git-r3
+	MY_P="HandBrake-${PV}"
+	SRC_URI="https://github.com/HandBrake/HandBrake/releases/download/${PV}/${MY_P}-source.tar.bz2 -> ${P}.tar.bz2"
+	S="${WORKDIR}/${MY_P}"
 	KEYWORDS="~amd64 ~x86"
 fi
 
@@ -23,28 +23,30 @@ HOMEPAGE="http://handbrake.fr/"
 LICENSE="GPL-2"
 
 SLOT="0"
-IUSE="+fdk gstreamer gtk libav libav-aac x265"
+IUSE="+fdk gstreamer gtk libav-aac numa nvenc x265"
 
 REQUIRED_USE="^^ ( fdk libav-aac )"
 
 RDEPEND="
+	app-arch/xz-utils
+	media-libs/speex
 	dev-libs/jansson
+	dev-libs/libxml2
 	media-libs/a52dec
 	media-libs/libass:=
 	>=media-libs/libbluray-1.0
+	>=media-libs/dav1d-0.5.1
 	media-libs/libdvdnav
-	media-libs/libdvdread
+	media-libs/libdvdread:=
 	media-libs/libsamplerate
 	media-libs/libtheora
 	media-libs/libvorbis
-	media-libs/libvpx
+	nvenc? ( media-libs/nv-codec-headers )
 	media-libs/opus
 	media-libs/x264:=
 	media-sound/lame
 	sys-libs/zlib
-	sys-process/numactl
-	libav? ( >=media-video/libav-10.1:0=[fdk?] )
-	!libav? ( >=media-video/ffmpeg-2.3:0=[fdk?] )
+	>=media-video/ffmpeg-4.2.1:0=[postproc,fdk?]
 	gstreamer? (
 		media-libs/gstreamer:1.0
 		media-libs/gst-plugins-base:1.0
@@ -54,19 +56,20 @@ RDEPEND="
 		media-plugins/gst-plugins-a52dec:1.0
 		media-plugins/gst-plugins-libav:1.0
 		media-plugins/gst-plugins-x264:1.0
+		media-plugins/gst-plugins-gdkpixbuf:1.0
 	)
 	gtk? (
 		>=x11-libs/gtk+-3.10
 		dev-libs/dbus-glib
 		dev-libs/glib:2
+		dev-libs/libgudev:=
 		x11-libs/cairo
 		x11-libs/gdk-pixbuf:2
 		x11-libs/libnotify
 		x11-libs/pango
-		virtual/libgudev:=
 	)
 	fdk? ( media-libs/fdk-aac )
-	x265? ( >=media-libs/x265-1.7:0= )
+	x265? ( >=media-libs/x265-3.2:0=[10bit,12bit,numa?] )
 	"
 
 DEPEND="${RDEPEND}
@@ -75,24 +78,23 @@ DEPEND="${RDEPEND}
 	dev-util/intltool
 	sys-devel/automake"
 
-PATCHES=(
-	"${FILESDIR}/handbrake-configure-autoconf-version.patch"
-)
-
-pkg_setup() {
-	python-any-r1_pkg_setup
-}
-
 src_configure() {
-	./configure \
+	# Libav was replaced in 1.2 with ffmpeg by default
+	# but I've elected to not make people change their use flags for AAC
+	# as its the same code anyway
+	WANT_AUTOCONF= ./configure \
 		--force \
 		--verbose \
 		--prefix="${EPREFIX}/usr" \
 		--disable-gtk-update-checks \
+		--disable-flatpak \
+		--disable-gtk4 \
 		$(use_enable libav-aac ffmpeg-aac) \
 		$(use_enable fdk fdk-aac) \
-		$(use_enable gtk) \
+		$(usex !gtk --disable-gtk) \
 		$(usex !gstreamer --disable-gst) \
+		$(use_enable numa) \
+		$(use_enable nvenc) \
 		$(use_enable x265) || die "Configure failed."
 }
 
@@ -113,20 +115,22 @@ src_install() {
 }
 
 pkg_postinst() {
-	einfo "For the CLI version of HandBrake, you can use \`HandBrakeCLI\`."
+	einfo "Gentoo builds of HandBrake are NOT SUPPORTED by upstream as they"
+	einfo "do not use the bundled (and often patched) upstream libraries."
+	einfo ""
+	einfo "Please do not raise bugs with upstream because of these ebuilds,"
+	einfo "report bugs to Gentoo's bugzilla or Multimedia forum instead."
 
+	einfo "For the CLI version of HandBrake, you can use \`HandBrakeCLI\`."
 	if use gtk ; then
-		einfo ""
 		einfo "For the GTK+ version of HandBrake, you can run \`ghb\`."
 	fi
 
-	gnome2_icon_cache_update
-}
-
-pkg_preinst() {
-	gnome2_icon_savelist
+	xdg_icon_cache_update
+	xdg_desktop_database_update
 }
 
 pkg_postrm() {
-	gnome2_icon_cache_update
+	xdg_icon_cache_update
+	xdg_desktop_database_update
 }
