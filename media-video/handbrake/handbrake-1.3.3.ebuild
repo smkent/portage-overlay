@@ -41,6 +41,7 @@ RDEPEND="
 	media-libs/libsamplerate
 	media-libs/libtheora
 	media-libs/libvorbis
+	media-libs/libvpx
 	nvenc? ( media-libs/nv-codec-headers )
 	media-libs/opus
 	media-libs/x264:=
